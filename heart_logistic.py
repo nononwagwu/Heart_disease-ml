@@ -157,16 +157,76 @@ rf_df.to_csv("rf_feature_importance.csv", index=False)
 print("RF feature importance saved.")
 
 
-#compute metrics
+
+# Adding SVM Model
+from sklearn.svm import SVC
+
+# Create model
+svm_model = SVC()
+
+# Train model
+svm_model.fit(X_train, y_train)
+
+# Predictions
+svm_pred = svm_model.predict(X_test)
+
+
+# evaluation
+
+print("\nSVM Results")
+print("Accuracy:", accuracy_score(y_test, svm_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, svm_pred))
+print("Classification Report:\n", classification_report(y_test, svm_pred))
+
+
+# compute SVM metrics
+svm_accuracy = accuracy_score(y_test, svm_pred)
+svm_precision = precision_score(y_test, svm_pred)
+svm_recall = recall_score(y_test, svm_pred)
+svm_f1 = f1_score(y_test, svm_pred)
+
+
+# XGBoost model
+from xgboost import XGBClassifier
+
+# Create model
+xgb_model = XGBClassifier(
+    use_label_encoder=False,
+    eval_metric="logloss",
+    random_state=42
+)
+
+# Train
+xgb_model.fit(X_train, y_train)
+
+# Predict
+xgb_pred = xgb_model.predict(X_test)
+
+# evaluation
+print("\nXGBoost Results")
+print("Accuracy:", accuracy_score(y_test, xgb_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, xgb_pred))
+print("Classification Report:\n", classification_report(y_test, xgb_pred))
+
+#compute XGBoost metrics
+xgb_accuracy = accuracy_score(y_test, xgb_pred)
+xgb_precision = precision_score(y_test, xgb_pred)
+xgb_recall = recall_score(y_test, xgb_pred)
+xgb_f1 = f1_score(y_test, xgb_pred)
+
+
+
+
+#comparison table
 
 results_df = pd.DataFrame({
-    "Model": ["Logistic Regression", "Random Forest"],
-    "Accuracy": [log_accuracy, rf_accuracy],
-    "Precision": [log_precision, rf_precision],
-    "Recall": [log_recall, rf_recall],
-    "F1 Score": [log_f1, rf_f1]
+    "Model": ["Logistic Regression", "Random Forest", "SVM", "XGBoost"],
+    "Accuracy": [log_accuracy, rf_accuracy, svm_accuracy, xgb_accuracy],
+    "Precision": [log_precision, rf_precision, svm_precision, xgb_precision],
+    "Recall": [log_recall, rf_recall, svm_recall, xgb_recall],
+    "F1 Score": [log_f1, rf_f1, svm_f1, xgb_f1]
 })
 
 # creating comparison table
-results_df.to_csv("model_comparison.csv", index=False)
 print(results_df)
+results_df.to_csv("model_comparison.csv", index=False)
