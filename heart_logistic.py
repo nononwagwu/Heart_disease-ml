@@ -57,6 +57,15 @@ y = df["target"]
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
+# adding scaling for svm
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
 
 # Train model
 model = LogisticRegression(max_iter=1000)
@@ -214,10 +223,10 @@ from sklearn.svm import SVC
 svm_model = SVC()
 
 # Train model
-svm_model.fit(X_train, y_train)
+svm_model.fit(X_train_scaled, y_train)
 
 # Predictions
-svm_pred = svm_model.predict(X_test)
+svm_pred = svm_model.predict(X_test_scaled)
 
 
 # evaluation
@@ -279,3 +288,46 @@ results_df = pd.DataFrame({
 # creating comparison table
 print(results_df)
 results_df.to_csv("model_comparison.csv", index=False)
+
+#tuning XGBoost
+
+
+from sklearn.model_selection import GridSearchCV
+from xgboost import XGBClassifier
+
+param_grid_xgb = {
+    'n_estimators': [100, 200],
+    'learning_rate': [0.01, 0.1],
+    'max_depth': [3, 6],
+    'subsample': [0.8, 1.0]
+}
+
+grid_xgb = GridSearchCV(
+    estimator=XGBClassifier(
+        eval_metric='logloss',
+        random_state=42
+    ),
+    param_grid=param_grid_xgb,
+    cv=5,
+    scoring='f1',
+    n_jobs=-1
+)
+
+grid_xgb.fit(X_train, y_train)
+
+print("Best XGBoost Params:", grid_xgb.best_params_)
+
+# evaluating tuned XGBoost
+best_xgb = grid_xgb.best_estimator_
+
+xgb_tuned_pred = best_xgb.predict(X_test)
+
+print("\nTuned XGBoost Results")
+print("Accuracy:", accuracy_score(y_test, xgb_tuned_pred))
+print("Classification Report:\n", classification_report(y_test, xgb_tuned_pred))
+
+# store tuned XGBoost metrics
+xgb_tuned_accuracy = accuracy_score(y_test, xgb_tuned_pred)
+xgb_tuned_precision = precision_score(y_test, xgb_tuned_pred)
+xgb_tuned_recall = recall_score(y_test, xgb_tuned_pred)
+xgb_tuned_f1 = f1_score(y_test, xgb_tuned_pred)
