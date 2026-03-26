@@ -243,6 +243,44 @@ svm_precision = precision_score(y_test, svm_pred)
 svm_recall = recall_score(y_test, svm_pred)
 svm_f1 = f1_score(y_test, svm_pred)
 
+# tuning SVM
+
+from sklearn.model_selection import GridSearchCV
+from sklearn.svm import SVC
+
+param_grid_svm = {
+    'C': [0.1, 1, 10],
+    'kernel': ['rbf', 'linear'],
+    'gamma': ['scale', 'auto']
+}
+
+grid_svm = GridSearchCV(
+    estimator=SVC(),
+    param_grid=param_grid_svm,
+    cv=5,
+    scoring='f1',
+    n_jobs=-1
+)
+
+grid_svm.fit(X_train_scaled, y_train)
+
+print("Best SVM Params:", grid_svm.best_params_)
+
+# evaluating tuned SVM
+best_svm = grid_svm.best_estimator_
+
+svm_tuned_pred = best_svm.predict(X_test_scaled)
+
+print("\nTuned SVM Results")
+print("Accuracy:", accuracy_score(y_test, svm_tuned_pred))
+print("Classification Report:\n", classification_report(y_test, svm_tuned_pred))
+
+# store tuned SVM metrics
+svm_tuned_accuracy = accuracy_score(y_test, svm_tuned_pred)
+svm_tuned_precision = precision_score(y_test, svm_tuned_pred)
+svm_tuned_recall = recall_score(y_test, svm_tuned_pred)
+svm_tuned_f1 = f1_score(y_test, svm_tuned_pred)
+
 
 # XGBoost model
 from xgboost import XGBClassifier
