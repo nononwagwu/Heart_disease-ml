@@ -1,33 +1,44 @@
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score
+#testing the new large dataset
+import pandas as pd
 
-column_names = [
-    "age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"
-]
-
-df = pd.read_csv("processed.cleveland.data", names=column_names)
+df = pd.read_csv("heart.csv")
 
 print(df.head())
-print(df.info())
+print(df.shape)
+print(df.columns)
 
-import numpy as np
+df.info()
 
-# Replace ? with NaN
-df.replace("?", np.nan, inplace=True)
 
-# Convert all columns to numeric
-df = df.apply(pd.to_numeric)
+# column_names = [
+#     "age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal", "target"
+# ]
 
-# Check missing values
-print(df.isnull().sum())
+# df = pd.read_csv("processed.cleveland.data", names=column_names)
 
-# remove missing rows
-df.dropna(inplace=True)
-print("Shape after cleaning:", df.shape)
+# print(df.head())
+# print(df.info())
 
-# convert Target to binary
-df["target"] = df["target"].apply(lambda x: 1 if x > 0 else 0)
-print(df["target"].value_counts())
+# import numpy as np
+
+# # Replace ? with NaN
+# df.replace("?", np.nan, inplace=True)
+
+# # Convert all columns to numeric
+# df = df.apply(pd.to_numeric)
+
+# # Check missing values
+# print(df.isnull().sum())
+
+# # remove missing rows
+# df.dropna(inplace=True)
+# print("Shape after cleaning:", df.shape)
+
+# # convert Target to binary
+# df["target"] = df["target"].apply(lambda x: 1 if x > 0 else 0)
+# print(df["target"].value_counts())
 
 
 #Train split
