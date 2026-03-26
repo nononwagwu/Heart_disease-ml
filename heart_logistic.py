@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score
-#testing the new large dataset
+#the new large dataset
 import pandas as pd
 
 df = pd.read_csv("heart.csv")
@@ -10,6 +10,8 @@ print(df.shape)
 print(df.columns)
 
 df.info()
+#adding Gridsearch import
+from sklearn.model_selection import GridSearchCV
 
 
 # column_names = [
@@ -166,6 +168,42 @@ print(rf_df)
 
 rf_df.to_csv("rf_feature_importance.csv", index=False)
 print("RF feature importance saved.")
+
+#tuning random forest 
+param_grid = {
+    'n_estimators': [100, 200],
+    'max_depth': [None, 10, 20],
+    'min_samples_split': [2, 5],
+    'min_samples_leaf': [1, 2]
+}
+
+grid_rf = GridSearchCV(
+    estimator=RandomForestClassifier(random_state=42),
+    param_grid=param_grid,
+    cv=5,
+    scoring='f1',
+    n_jobs=-1
+)
+
+grid_rf.fit(X_train, y_train)
+
+print("Best RF Params:", grid_rf.best_params_)
+
+#evaluating the tuned model
+best_rf = grid_rf.best_estimator_
+
+rf_tuned_pred = best_rf.predict(X_test)
+
+print("\nTuned Random Forest Results")
+print("Accuracy:", accuracy_score(y_test, rf_tuned_pred))
+print("Classification Report:\n", classification_report(y_test, rf_tuned_pred))
+
+# store tuned metrics
+rf_tuned_accuracy = accuracy_score(y_test, rf_tuned_pred)
+rf_tuned_precision = precision_score(y_test, rf_tuned_pred)
+rf_tuned_recall = recall_score(y_test, rf_tuned_pred)
+rf_tuned_f1 = f1_score(y_test, rf_tuned_pred)
+
 
 
 
