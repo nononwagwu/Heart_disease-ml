@@ -1,7 +1,8 @@
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score
 #the new large dataset
-import pandas as pd
+import matplotlib
+print(matplotlib.__file__)
 
 df = pd.read_csv("heart.csv")
 
@@ -369,3 +370,133 @@ xgb_tuned_accuracy = accuracy_score(y_test, xgb_tuned_pred)
 xgb_tuned_precision = precision_score(y_test, xgb_tuned_pred)
 xgb_tuned_recall = recall_score(y_test, xgb_tuned_pred)
 xgb_tuned_f1 = f1_score(y_test, xgb_tuned_pred)
+
+#creating a graphical comparison of models
+svm_before = svm_f1
+svm_after = svm_tuned_f1
+
+rf_before = rf_f1
+rf_after = rf_tuned_f1
+
+xgb_before = xgb_f1
+xgb_after = xgb_tuned_f1
+import matplotlib.pyplot as plt
+import numpy as np
+
+models = ['SVM', 'Random Forest', 'XGBoost']
+before = [svm_before, rf_before, xgb_before]
+after = [svm_after, rf_after, xgb_after]
+
+x = np.arange(len(models))
+width = 0.35
+
+plt.figure()
+plt.bar(x - width/2, before, width, label='Before Tuning')
+plt.bar(x + width/2, after, width, label='After Tuning')
+
+plt.xticks(x, models)
+plt.ylabel('F1 Score')
+plt.title('Hyperparameter Tuning Impact')
+plt.legend()
+
+plt.show()
+import matplotlib.pyplot as plt
+import numpy as np
+
+metrics = ['Accuracy', 'Precision', 'Recall', 'F1']
+
+svm_scores = [svm_accuracy, svm_precision, svm_recall, svm_f1]
+rf_scores = [rf_accuracy, rf_precision, rf_recall, rf_f1]
+xgb_scores = [xgb_accuracy, xgb_precision, xgb_recall, xgb_f1]
+
+x = np.arange(len(metrics))
+width = 0.25
+
+plt.figure()
+plt.bar(x - width, svm_scores, width, label='SVM')
+plt.bar(x, rf_scores, width, label='Random Forest')
+plt.bar(x + width, xgb_scores, width, label='XGBoost')
+
+plt.xticks(x, metrics)
+plt.ylabel('Score')
+plt.title('Model Performance Comparison')
+plt.legend()
+
+plt.show()
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+rf_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': rf_model.feature_importances_
+}).sort_values(by='Importance', ascending=False)
+
+plt.figure()
+plt.barh(rf_df['Feature'], rf_df['Importance'])
+plt.gca().invert_yaxis()
+
+plt.title('Random Forest Feature Importance')
+plt.xlabel('Importance Score')
+
+plt.show()
+
+from sklearn.inspection import permutation_importance
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Use the tuned SVM
+result = permutation_importance(
+    best_svm, X_test_scaled, y_test,
+    n_repeats=10,
+    random_state=42
+)
+
+svm_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Importance': result.importances_mean
+}).sort_values(by='Importance', ascending=False)
+
+plt.figure()
+plt.barh(svm_df['Feature'], svm_df['Importance'])
+plt.gca().invert_yaxis()
+
+plt.title('SVM Feature Importance (Permutation)')
+plt.xlabel('Importance Score')
+
+plt.show()
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Random Forest importance
+rf_imp = rf_model.feature_importances_
+
+# XGBoost importance (USE TUNED MODEL)
+xgb_imp = best_xgb.feature_importances_
+
+# SVM importance (already computed earlier)
+svm_imp = svm_df.set_index('Feature')['Importance']
+
+# Combine all into one DataFrame
+comparison_df = pd.DataFrame({
+    'Feature': X.columns,
+    'Random Forest': rf_imp,
+    'XGBoost': xgb_imp
+})
+
+comparison_df = comparison_df.set_index('Feature')
+
+# Add SVM importance (align by feature names)
+comparison_df['SVM'] = svm_imp
+
+# Sort by Random Forest importance for clarity
+comparison_df = comparison_df.sort_values(by='Random Forest', ascending=False)
+
+# Plot
+comparison_df.plot(kind='bar')
+
+plt.title('Feature Importance Comparison Across Models')
+plt.ylabel('Importance')
+
+plt.show()
