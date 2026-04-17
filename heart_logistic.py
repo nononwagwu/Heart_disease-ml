@@ -365,6 +365,83 @@ print("\nTuned XGBoost Results")
 print("Accuracy:", accuracy_score(y_test, xgb_tuned_pred))
 print("Classification Report:\n", classification_report(y_test, xgb_tuned_pred))
 
+
+# =========================
+# AGE-BASED SEGMENTED MODELS
+# =========================
+print("=== REACHED AGE SECTION ===")
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from xgboost import XGBClassifier
+
+def split_data(data, target_col):
+    X = data.drop(columns=[target_col])
+    y = data[target_col]
+    return train_test_split(X, y, test_size=0.2, random_state=42)
+
+def train_xgb(X_train, y_train):
+    model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+    model.fit(X_train, y_train)
+    return model
+
+def evaluate(model, X_test, y_test):
+    preds = model.predict(X_test)
+    return accuracy_score(y_test, preds)
+
+# define threshold
+age_threshold = df['age'].median()
+
+young_df = df[df['age'] < age_threshold]
+old_df = df[df['age'] >= age_threshold]
+
+# young model
+X_train_y, X_test_y, y_train_y, y_test_y = split_data(young_df, 'target')
+young_model = train_xgb(X_train_y, y_train_y)
+young_acc = evaluate(young_model, X_test_y, y_test_y)
+
+# old model
+X_train_o, X_test_o, y_train_o, y_test_o = split_data(old_df, 'target')
+old_model = train_xgb(X_train_o, y_train_o)
+old_acc = evaluate(old_model, X_test_o, y_test_o)
+
+print("Young Accuracy:", young_acc)
+print("Old Accuracy:", old_acc)
+
+# define threshold
+age_threshold = df['age'].median()
+print("Age Threshold:", age_threshold)
+
+young_df = df[df['age'] < age_threshold]
+old_df = df[df['age'] >= age_threshold]
+
+print("Young size:", young_df.shape)
+print("Old size:", old_df.shape)
+
+# =========================
+# SEX-BASED SEGMENTED MODELS
+# =========================
+print("=== REACHED SEX SECTION ===")
+
+male_df = df[df['sex'] == 1]
+female_df = df[df['sex'] == 0]
+
+print("Male size:", male_df.shape)
+print("Female size:", female_df.shape)
+
+# male model
+X_train_m, X_test_m, y_train_m, y_test_m = split_data(male_df, 'target')
+male_model = train_xgb(X_train_m, y_train_m)
+male_acc = evaluate(male_model, X_test_m, y_test_m)
+
+# female model
+X_train_f, X_test_f, y_train_f, y_test_f = split_data(female_df, 'target')
+female_model = train_xgb(X_train_f, y_train_f)
+female_acc = evaluate(female_model, X_test_f, y_test_f)
+
+print("Male Accuracy:", male_acc)
+print("Female Accuracy:", female_acc)
+
 # store tuned XGBoost metrics
 xgb_tuned_accuracy = accuracy_score(y_test, xgb_tuned_pred)
 xgb_tuned_precision = precision_score(y_test, xgb_tuned_pred)
@@ -500,3 +577,7 @@ plt.title('Feature Importance Comparison Across Models')
 plt.ylabel('Importance')
 
 plt.show()
+
+
+
+
